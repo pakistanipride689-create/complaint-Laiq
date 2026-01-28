@@ -685,7 +685,7 @@
         <section class="login-section">
             <div class="login-container">
                 <h2 class="login-title">Login</h2>
-                <p class="login-subtitle">Register your account to continue</p>
+                <p class="login-subtitle">Enter your credentials to continue</p>
 
                 <div class="error-message" id="errorMessage"></div>
 
@@ -705,7 +705,7 @@
                     </div>
 
                     <!-- Role Filter -->
-                    <div class="form-group">
+                    <div class="form-group" id="roleGroup">
                         <label class="form-label">
                             Role <span class="required">*</span>
                         </label>
@@ -770,17 +770,33 @@
             const empId = this.value;
             const confirmPasswordGroup = document.getElementById('confirmPasswordGroup');
             const confirmPasswordInput = document.getElementById('confirmPassword');
+            const roleGroup = document.getElementById('roleGroup');
+            const roleSelect = document.getElementById('role');
             
             if (empId) {
                 const existingUser = localStorage.getItem('user_' + empId);
                 if (existingUser) {
-                    // User exists - hide confirm password
+                    // User exists - LOGIN MODE
+                    const userData = JSON.parse(existingUser);
+                    
+                    // Hide confirm password
                     confirmPasswordGroup.style.display = 'none';
                     confirmPasswordInput.removeAttribute('required');
+                    
+                    // Hide role field and auto-select saved role
+                    roleGroup.style.display = 'none';
+                    roleSelect.value = userData.role;
+                    roleSelect.removeAttribute('required');
                 } else {
-                    // New user - show confirm password
+                    // New user - REGISTRATION MODE
+                    // Show confirm password
                     confirmPasswordGroup.style.display = 'block';
                     confirmPasswordInput.setAttribute('required', 'required');
+                    
+                    // Show role field
+                    roleGroup.style.display = 'block';
+                    roleSelect.value = '';
+                    roleSelect.setAttribute('required', 'required');
                 }
             }
         });
@@ -801,15 +817,16 @@
             if (existingUser) {
                 // User exists - LOGIN MODE
                 const userData = JSON.parse(existingUser);
-                if (userData.password === password && userData.role === role) {
+                // Role is already auto-selected from saved data
+                if (userData.password === password) {
                     // Login successful
                     sessionStorage.setItem('currentUser', JSON.stringify({
                         empId: empId,
-                        role: role
+                        role: userData.role
                     }));
-                    window.location.href = 'dashboard.html';
+                    window.location.href = 'Dashboard.html';
                 } else {
-                    errorMessage.textContent = 'Invalid credentials!';
+                    errorMessage.textContent = 'Invalid password!';
                     errorMessage.classList.add('active');
                     setTimeout(() => {
                         errorMessage.classList.remove('active');
@@ -840,7 +857,7 @@
                 }));
                 
                 alert('Registration successful! Welcome to STPL Complaint Management System.');
-                window.location.href = 'dashboard.html';
+                window.location.href = 'Dashboard.html';
             }
         }
 
